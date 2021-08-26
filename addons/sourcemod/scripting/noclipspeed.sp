@@ -20,13 +20,13 @@ public Plugin myinfo =
 #define	MAX_EDICT_BITS			11
 #define	MAX_EDICTS				(1 << MAX_EDICT_BITS)
 
-#define NUM_ENT_ENTRY_BITS		(MAX_EDICT_BITS + 2)
+#define NUM_ENT_ENTRY_BITS		(MAX_EDICT_BITS + 1)
 #define NUM_ENT_ENTRIES			(1 << NUM_ENT_ENTRY_BITS)
 #define INVALID_EHANDLE_INDEX	0xFFFFFFFF
 
 #define NUM_SERIAL_NUM_BITS		16 // (32 - NUM_ENT_ENTRY_BITS)
 #define NUM_SERIAL_NUM_SHIFT_BITS (32 - NUM_SERIAL_NUM_BITS)
-#define ENT_ENTRY_MASK			(( 1 << NUM_SERIAL_NUM_BITS) - 1)
+#define ENT_ENTRY_MASK			(NUM_ENT_ENTRIES - 1)
 
 enum OSType
 {
@@ -48,8 +48,12 @@ ConVar sv_maxspeed;
 ConVar sv_friction;
 ConVar sv_noclipspeed;
 
+EngineVersion gEV_Type;
+
 public void OnPluginStart()
 {
+	gEV_Type = GetEngineVersion();
+	
 	RegConsoleCmd("sm_ns", SM_NoclipSpeed, "Sets noclip speed.");
 	RegConsoleCmd("sm_noclipspeed", SM_NoclipSpeed, "Sets noclip speed.");
 	
@@ -101,8 +105,16 @@ void SetupDhooks(GameData gd)
 		ASSERT_MSG(DHookSetFromConf(dhook, gd, SDKConf_Signature, "CGameMovement::FullNoClipMove"), "Failed to find \"CGameMovement::FullNoClipMove\" signature.");
 		
 		DHookAddParam(dhook, HookParamType_Int, .custom_register = DHookRegister_ECX);
-		DHookAddParam(dhook, HookParamType_Float, .custom_register = DHookRegister_XMM1);
-		DHookAddParam(dhook, HookParamType_Float, .custom_register = DHookRegister_XMM2);
+		if(gEV_Type == Engine_CSGO)
+		{
+			DHookAddParam(dhook, HookParamType_Float, .custom_register = DHookRegister_XMM1);
+			DHookAddParam(dhook, HookParamType_Float, .custom_register = DHookRegister_XMM2);
+		}
+		else
+		{
+			DHookAddParam(dhook, HookParamType_Float);
+			DHookAddParam(dhook, HookParamType_Float);
+		}
 		
 		ASSERT_MSG(DHookEnableDetour(dhook, false, FullNoClipMove_Dhook), "Failed to enable \"CGameMovement::FullNoClipMove\" detour.");
 	}
