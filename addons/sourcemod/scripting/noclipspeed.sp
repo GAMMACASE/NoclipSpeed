@@ -1,7 +1,9 @@
 #include "sourcemod"
 #include "sdktools"
 #include "dhooks"
-#include "glib/memutils"
+
+#include "glib/addressutils"
+#include "glib/assertutils"
 
 #define SNAME "[NoclipSpeed] "
 
@@ -10,7 +12,7 @@ public Plugin myinfo =
     name = "NoclipSpeed",
     author = "GAMMA CASE",
     description = "Let's you change noclip speed.",
-    version = "1.0.0",
+    version = "1.1.0",
     url = "http://steamcommunity.com/id/_GAMMACASE_/"
 };
 
