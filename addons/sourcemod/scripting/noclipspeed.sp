@@ -25,8 +25,8 @@ public Plugin myinfo =
 #define INVALID_EHANDLE_INDEX	0xFFFFFFFF
 
 #define NUM_SERIAL_NUM_BITS		16 // (32 - NUM_ENT_ENTRY_BITS)
-#define NUM_SERIAL_NUM_SHIFT_BITS (32 - NUM_SERIAL_NUM_BITS)
-#define ENT_ENTRY_MASK			(NUM_ENT_ENTRIES - 1)
+#define ENT_ENTRY_MASK_CSGO		(( 1 << NUM_SERIAL_NUM_BITS) - 1)
+#define ENT_ENTRY_MASK_CSS		(NUM_ENT_ENTRIES - 1)
 
 enum OSType
 {
@@ -48,11 +48,11 @@ ConVar sv_maxspeed;
 ConVar sv_friction;
 ConVar sv_noclipspeed;
 
-EngineVersion gEV_Type;
+EngineVersion gEVType;
 
 public void OnPluginStart()
 {
-	gEV_Type = GetEngineVersion();
+	gEVType = GetEngineVersion();
 	
 	RegConsoleCmd("sm_ns", SM_NoclipSpeed, "Sets noclip speed.");
 	RegConsoleCmd("sm_noclipspeed", SM_NoclipSpeed, "Sets noclip speed.");
@@ -105,7 +105,7 @@ void SetupDhooks(GameData gd)
 		ASSERT_MSG(DHookSetFromConf(dhook, gd, SDKConf_Signature, "CGameMovement::FullNoClipMove"), "Failed to find \"CGameMovement::FullNoClipMove\" signature.");
 		
 		DHookAddParam(dhook, HookParamType_Int, .custom_register = DHookRegister_ECX);
-		if(gEV_Type == Engine_CSGO)
+		if(gEVType == Engine_CSGO)
 		{
 			DHookAddParam(dhook, HookParamType_Float, .custom_register = DHookRegister_XMM1);
 			DHookAddParam(dhook, HookParamType_Float, .custom_register = DHookRegister_XMM2);
@@ -181,7 +181,7 @@ int EntityToBCompatRef(Address player)
 		return INVALID_EHANDLE_INDEX;
 	
 	// https://github.com/perilouswithadollarsign/cstrike15_src/blob/29e4c1fda9698d5cebcdaf1a0de4b829fa149bf8/public/basehandle.h#L137
-	int entry_idx = m_RefEHandle & ENT_ENTRY_MASK;
+	int entry_idx = gEVType == Engine_CSGO ? m_RefEHandle & ENT_ENTRY_MASK_CSGO : m_RefEHandle & ENT_ENTRY_MASK_CSS;
 	
 	if(entry_idx >= MAX_EDICTS)
 		return m_RefEHandle | (1 << 31);
