@@ -12,7 +12,7 @@ public Plugin myinfo =
     name = "NoclipSpeed",
     author = "GAMMA CASE",
     description = "Let's you change noclip speed.",
-    version = "1.1.0",
+    version = "1.1.1",
     url = "http://steamcommunity.com/id/_GAMMACASE_/"
 };
 
@@ -56,10 +56,8 @@ public void OnPluginStart()
 {
 	gEVType = GetEngineVersion();
 	
-	RegConsoleCmd("sm_ns", SM_NoclipSpeed, "Sets noclip speed.");
-	RegConsoleCmd("sm_noclipspeed", SM_NoclipSpeed, "Sets noclip speed.");
-	RegConsoleCmd("+inc", Inc_SM_NoclipSpeed, "Increase noclip speed.");
-	RegConsoleCmd("+dec", Dec_SM_NoclipSpeed, "Decrease noclip speed.");
+	RegConsoleCmd("sm_ns", SM_NoclipSpeed, "Sets noclip speed. Can also be used to set or change speed via argument (Examples: sm_ns 1500 or sm_ns +100)");
+	RegConsoleCmd("sm_noclipspeed", SM_NoclipSpeed, "Sets noclip speed. Can also be used to set or change speed via argument (Examples: sm_ns 1500 or sm_ns +100)");
 	
 	gMaxAllowedNoclipFactor = CreateConVar("noclipspeed_max_factor", "35", "Max allowed factor for noclip (factor * 300 = speed)", .hasMin = true);
 	
@@ -193,36 +191,6 @@ int EntityToBCompatRef(Address player)
 	return entry_idx;
 }
 
-public Action Inc_SM_NoclipSpeed(int client, int args)
-{
-	if(gPlayerNoclipSpeed[client] + 1.0 > gMaxAllowedNoclipFactor.FloatValue)
-	{
-		ReplyToCommand(client, "You have reached the limit!");
-	}
-	else
-	{
-		gPlayerNoclipSpeed[client] += 1.0 + FLT_EPSILON;
-		ReplyToCommand(client, "Increased");
-	}
-
-	return Plugin_Handled;
-}
-
-public Action Dec_SM_NoclipSpeed(int client, int args)
-{
-	if(gPlayerNoclipSpeed[client] - 1.0 < 0.0)
-	{
-		ReplyToCommand(client, "You have reached the limit!");
-	}
-	else
-	{
-		gPlayerNoclipSpeed[client] -= 1.0 + FLT_EPSILON;
-		ReplyToCommand(client, "Decreased");
-	}
-
-	return Plugin_Handled;
-}
-
 public Action SM_NoclipSpeed(int client, int args)
 {
 	if(!client)
@@ -249,7 +217,14 @@ public Action SM_NoclipSpeed(int client, int args)
 		
 		float spd = StringToFloat(buff);
 		
-		gPlayerNoclipSpeed[client] = Clamp(NoclipUPSToFactor(spd), 0.0, gMaxAllowedNoclipFactor.FloatValue);
+		// NaN check in case of an invalid argument
+		if(spd != spd)
+		{
+			PrintToChat(client, SNAME..."Invalid speed value specified, check your arguments!");
+			return Plugin_Handled;
+		}
+		
+		gPlayerNoclipSpeed[client] = Clamp(buff[0] == '+' || buff[0] == '-' ? gPlayerNoclipSpeed[client] + NoclipUPSToFactor(spd) : NoclipUPSToFactor(spd), 0.0, gMaxAllowedNoclipFactor.FloatValue);
 		Format(buff, sizeof(buff), "%f", gPlayerNoclipSpeed[client]);
 		sv_noclipspeed.ReplicateToClient(client, buff);
 		
