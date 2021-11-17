@@ -224,15 +224,11 @@ public Action SM_NoclipSpeed(int client, int args)
 			return Plugin_Handled;
 		}
 		
-		if(buff[0] == '+' || buff[0] == '-')
-			gPlayerNoclipSpeed[client] = Clamp(gPlayerNoclipSpeed[client] + NoclipUPSToFactor(spd) + (spd < 0.0 ? -FLT_EPSILON : FLT_EPSILON), 0.0, gMaxAllowedNoclipFactor.FloatValue);
-		else
-			gPlayerNoclipSpeed[client] = Clamp(NoclipUPSToFactor(spd), 0.0, gMaxAllowedNoclipFactor.FloatValue);
-		
+		gPlayerNoclipSpeed[client] = Clamp(buff[0] == '+' || buff[0] == '-' ? gPlayerNoclipSpeed[client] + NoclipUPSToFactor(spd) : NoclipUPSToFactor(spd), 0.0, gMaxAllowedNoclipFactor.FloatValue);
 		Format(buff, sizeof(buff), "%f", gPlayerNoclipSpeed[client]);
 		sv_noclipspeed.ReplicateToClient(client, buff);
 		
-		PrintToChat(client, SNAME..."Changed noclip speed to: %.2f u/s", NoclipFactorToUPS(gPlayerNoclipSpeed[client]));
+		PrintToChat(client, SNAME..."Changed noclip speed to: %i u/s", RoundToNearest(NoclipFactorToUPS(gPlayerNoclipSpeed[client])));
 	}
 	
 	return Plugin_Handled;
