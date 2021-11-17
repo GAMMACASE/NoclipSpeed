@@ -58,6 +58,8 @@ public void OnPluginStart()
 	
 	RegConsoleCmd("sm_ns", SM_NoclipSpeed, "Sets noclip speed.");
 	RegConsoleCmd("sm_noclipspeed", SM_NoclipSpeed, "Sets noclip speed.");
+	RegConsoleCmd("+inc", Inc_SM_NoclipSpeed, "Sets noclip speed.");
+	RegConsoleCmd("+dec", Dec_SM_NoclipSpeed, "Sets noclip speed.");
 	
 	gMaxAllowedNoclipFactor = CreateConVar("noclipspeed_max_factor", "35", "Max allowed factor for noclip (factor * 300 = speed)", .hasMin = true);
 	
@@ -189,6 +191,36 @@ int EntityToBCompatRef(Address player)
 		return m_RefEHandle | (1 << 31);
 	
 	return entry_idx;
+}
+
+public Action Inc_SM_NoclipSpeed(int client, int args)
+{
+	if(gPlayerNoclipSpeed[client] + 1.0 > gMaxAllowedNoclipFactor.FloatValue)
+	{
+		ReplyToCommand(client, "You have reached the limit!");
+	}
+	else
+	{
+		gPlayerNoclipSpeed[client] += 1.0 + FLT_EPSILON;
+		ReplyToCommand(client, "Increased");
+	}
+
+	return Plugin_Handled;
+}
+
+public Action Dec_SM_NoclipSpeed(int client, int args)
+{
+	if(gPlayerNoclipSpeed[client] - 1.0 < 0.0)
+	{
+		ReplyToCommand(client, "You have reached the limit!");
+	}
+	else
+	{
+		gPlayerNoclipSpeed[client] -= 1.0 + FLT_EPSILON;
+		ReplyToCommand(client, "Decreased");
+	}
+
+	return Plugin_Handled;
 }
 
 public Action SM_NoclipSpeed(int client, int args)
