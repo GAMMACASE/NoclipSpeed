@@ -58,8 +58,8 @@ public void OnPluginStart()
 	
 	RegConsoleCmd("sm_ns", SM_NoclipSpeed, "Sets noclip speed.");
 	RegConsoleCmd("sm_noclipspeed", SM_NoclipSpeed, "Sets noclip speed.");
-	RegConsoleCmd("+inc", Inc_SM_NoclipSpeed, "Sets noclip speed.");
-	RegConsoleCmd("+dec", Dec_SM_NoclipSpeed, "Sets noclip speed.");
+	RegConsoleCmd("+inc", Inc_SM_NoclipSpeed, "Increase noclip speed.");
+	RegConsoleCmd("+dec", Dec_SM_NoclipSpeed, "Decrease noclip speed.");
 	
 	gMaxAllowedNoclipFactor = CreateConVar("noclipspeed_max_factor", "35", "Max allowed factor for noclip (factor * 300 = speed)", .hasMin = true);
 	
