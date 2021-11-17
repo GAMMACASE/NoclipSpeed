@@ -218,13 +218,17 @@ public Action SM_NoclipSpeed(int client, int args)
 		float spd = StringToFloat(buff);
 		
 		// NaN check in case of an invalid argument
-		if(spd != spd)
+		if(spd == 0.0 || spd != spd)
 		{
 			PrintToChat(client, SNAME..."Invalid speed value specified, check your arguments!");
 			return Plugin_Handled;
 		}
 		
-		gPlayerNoclipSpeed[client] = Clamp(buff[0] == '+' || buff[0] == '-' ? gPlayerNoclipSpeed[client] + NoclipUPSToFactor(spd) : NoclipUPSToFactor(spd), 0.0, gMaxAllowedNoclipFactor.FloatValue);
+		if(buff[0] == '+' || buff[0] == '-')
+			gPlayerNoclipSpeed[client] = Clamp(gPlayerNoclipSpeed[client] + NoclipUPSToFactor(spd) + (spd < 0.0 ? -FLT_EPSILON : FLT_EPSILON), 0.0, gMaxAllowedNoclipFactor.FloatValue);
+		else
+			gPlayerNoclipSpeed[client] = Clamp(NoclipUPSToFactor(spd), 0.0, gMaxAllowedNoclipFactor.FloatValue);
+		
 		Format(buff, sizeof(buff), "%f", gPlayerNoclipSpeed[client]);
 		sv_noclipspeed.ReplicateToClient(client, buff);
 		
