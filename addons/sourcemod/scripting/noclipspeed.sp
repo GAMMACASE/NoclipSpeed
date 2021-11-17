@@ -240,7 +240,7 @@ public int NoclipSpeed_Menu(Menu menu, MenuAction action, int param1, int param2
 	{
 		case MenuAction_Display:
 		{
-			menu.SetTitle("Noclip speed\n \nCurrent speed: %.2f\n ", NoclipFactorToUPS(gPlayerNoclipSpeed[param1]));
+			menu.SetTitle("Noclip speed\n \nCurrent speed: %i\n ", RoundToNearest(NoclipFactorToUPS(gPlayerNoclipSpeed[param1])));
 		}
 		
 		case MenuAction_DrawItem:
