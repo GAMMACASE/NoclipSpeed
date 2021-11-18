@@ -12,7 +12,7 @@ public Plugin myinfo =
     name = "NoclipSpeed",
     author = "GAMMA CASE",
     description = "Let's you change noclip speed.",
-    version = "1.1.0",
+    version = "1.1.1",
     url = "http://steamcommunity.com/id/_GAMMACASE_/"
 };
 
@@ -56,8 +56,8 @@ public void OnPluginStart()
 {
 	gEVType = GetEngineVersion();
 	
-	RegConsoleCmd("sm_ns", SM_NoclipSpeed, "Sets noclip speed.");
-	RegConsoleCmd("sm_noclipspeed", SM_NoclipSpeed, "Sets noclip speed.");
+	RegConsoleCmd("sm_ns", SM_NoclipSpeed, "Sets noclip speed. Can also be used to set or change speed via argument (Examples: sm_ns 1500 or sm_ns +100)");
+	RegConsoleCmd("sm_noclipspeed", SM_NoclipSpeed, "Sets noclip speed. Can also be used to set or change speed via argument (Examples: sm_ns 1500 or sm_ns +100)");
 	
 	gMaxAllowedNoclipFactor = CreateConVar("noclipspeed_max_factor", "35", "Max allowed factor for noclip (factor * 300 = speed)", .hasMin = true);
 	
@@ -217,11 +217,18 @@ public Action SM_NoclipSpeed(int client, int args)
 		
 		float spd = StringToFloat(buff);
 		
-		gPlayerNoclipSpeed[client] = Clamp(NoclipUPSToFactor(spd), 0.0, gMaxAllowedNoclipFactor.FloatValue);
+		// NaN check in case of an invalid argument
+		if(spd == 0.0 || spd != spd)
+		{
+			PrintToChat(client, SNAME..."Invalid speed value specified, check your arguments!");
+			return Plugin_Handled;
+		}
+		
+		gPlayerNoclipSpeed[client] = Clamp(buff[0] == '+' || buff[0] == '-' ? gPlayerNoclipSpeed[client] + NoclipUPSToFactor(spd) : NoclipUPSToFactor(spd), 0.0, gMaxAllowedNoclipFactor.FloatValue);
 		Format(buff, sizeof(buff), "%f", gPlayerNoclipSpeed[client]);
 		sv_noclipspeed.ReplicateToClient(client, buff);
 		
-		PrintToChat(client, SNAME..."Changed noclip speed to: %.2f u/s", NoclipFactorToUPS(gPlayerNoclipSpeed[client]));
+		PrintToChat(client, SNAME..."Changed noclip speed to: %i u/s", RoundToNearest(NoclipFactorToUPS(gPlayerNoclipSpeed[client])));
 	}
 	
 	return Plugin_Handled;
@@ -233,7 +240,7 @@ public int NoclipSpeed_Menu(Menu menu, MenuAction action, int param1, int param2
 	{
 		case MenuAction_Display:
 		{
-			menu.SetTitle("Noclip speed\n \nCurrent speed: %.2f\n ", NoclipFactorToUPS(gPlayerNoclipSpeed[param1]));
+			menu.SetTitle("Noclip speed\n \nCurrent speed: %i\n ", RoundToNearest(NoclipFactorToUPS(gPlayerNoclipSpeed[param1])));
 		}
 		
 		case MenuAction_DrawItem:
